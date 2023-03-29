@@ -159,6 +159,8 @@ class AsyncToSync:
         # You can't call AsyncToSync from a thread with a running event loop
         try:
             event_loop = get_running_loop()
+            print("EVENT_LOOP")
+            print(event_loop)
         except RuntimeError:
             pass
         else:
@@ -167,14 +169,14 @@ class AsyncToSync:
                     "You cannot use AsyncToSync in the same thread as an async event loop - "
                     "just await the async function directly."
                 )
-        print("EVENT_LOOP")
-        print(event_loop)
         if contextvars is not None:
             # Wrapping context in list so it can be reassigned from within
             # `main_wrap`.
             context = [contextvars.copy_context()]
         else:
             context = None
+        
+        print(context)
 
         # Make a future for the return information
         call_result = Future()
