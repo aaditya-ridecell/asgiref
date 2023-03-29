@@ -289,10 +289,15 @@ class AsyncToSync:
         result/exception future.
         """
         print("INSIDE MAIN_WRAP ASYNCtoSYNC")
+        print("ARGS")
         print(*args)
+        print("KWARGS")
         print(**kwargs)
+        print("CALL_RESULT")
         print(call_result)
+        print("EXC_INFO")
         print(exc_info)
+        print("CONTEXT")
         print(context)
         
         if context is not None:
@@ -308,9 +313,11 @@ class AsyncToSync:
                     raise exc_info[1]
                 except BaseException:
                     result = await self.awaitable(*args, **kwargs)
+                    print("RESULT_IN_EXCEPTION")
                     print(result)
             else:
                 result = await self.awaitable(*args, **kwargs)
+                print("RESULT_IN_ELSE")
                 print(result)
         except BaseException as e:
             call_result.set_exception(e)
@@ -321,6 +328,7 @@ class AsyncToSync:
 
             if context is not None:
                 context[0] = contextvars.copy_context()
+        print("FINAL_CALL")
         print(call_result)
 
 
