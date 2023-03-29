@@ -119,6 +119,8 @@ class AsyncToSync:
     executors = Local()
 
     def __init__(self, awaitable, force_new_loop=False):
+        print("INSIDE INIT ASYNCtoSYNC")
+        print(awaitable)
         if not callable(awaitable) or not _iscoroutinefunction_or_partial(awaitable):
             # Python does not have very reliable detection of async functions
             # (lots of false negatives) so this is just a warning.
@@ -148,8 +150,12 @@ class AsyncToSync:
                     )
                 else:
                     self.main_event_loop = None
+        print(self.main_event_loop)
 
     def __call__(self, *args, **kwargs):
+        print("INSIDE CALL ASYNCtoSYNC")
+        print(*args)
+        print(**kwargs)
         # You can't call AsyncToSync from a thread with a running event loop
         try:
             event_loop = get_running_loop()
@@ -161,7 +167,8 @@ class AsyncToSync:
                     "You cannot use AsyncToSync in the same thread as an async event loop - "
                     "just await the async function directly."
                 )
-
+        print("EVENT_LOOP")
+        print(event_loop)
         if contextvars is not None:
             # Wrapping context in list so it can be reassigned from within
             # `main_wrap`.
@@ -192,17 +199,21 @@ class AsyncToSync:
 
             if not (self.main_event_loop and self.main_event_loop.is_running()):
                 # Make our own event loop - in a new thread - and run inside that.
+                print("GETTING_NEW_EVENT_LOOP")
                 loop = asyncio.new_event_loop()
                 loop_executor = ThreadPoolExecutor(max_workers=1)
                 loop_future = loop_executor.submit(
                     self._run_event_loop, loop, awaitable
                 )
+                print(current_executor)
+                print(loop_future)
                 if current_executor:
                     # Run the CurrentThreadExecutor until the future is done
                     current_executor.run_until_future(loop_future)
                 # Wait for future and/or allow for exception propagation
                 loop_future.result()
             else:
+                print("REUSING_EVENT_LOOP")
                 # Call it inside the existing loop
                 self.main_event_loop.call_soon_threadsafe(
                     self.main_event_loop.create_task, awaitable
@@ -275,6 +286,13 @@ class AsyncToSync:
         Wraps the awaitable with something that puts the result into the
         result/exception future.
         """
+        print("INSIDE MAIN_WRAP ASYNCtoSYNC")
+        print(*args)
+        print(**kwargs)
+        print(call_result)
+        print(exc_info)
+        print(context)
+        
         if context is not None:
             _restore_context(context[0])
 
@@ -288,8 +306,10 @@ class AsyncToSync:
                     raise exc_info[1]
                 except BaseException:
                     result = await self.awaitable(*args, **kwargs)
+                    print(result)
             else:
                 result = await self.awaitable(*args, **kwargs)
+                print(result)
         except BaseException as e:
             call_result.set_exception(e)
         else:
@@ -299,6 +319,7 @@ class AsyncToSync:
 
             if context is not None:
                 context[0] = contextvars.copy_context()
+        print(call_result)
 
 
 class SyncToAsync:
