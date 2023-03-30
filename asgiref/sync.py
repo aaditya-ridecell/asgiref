@@ -316,6 +316,7 @@ class AsyncToSync:
                     print("RESULT_IN_EXCEPTION")
                     print(result)
             else:
+                print("EXECUTING AWAITABLE")
                 result = await self.awaitable(*args, **kwargs)
                 print("RESULT_IN_ELSE")
                 print(result)
